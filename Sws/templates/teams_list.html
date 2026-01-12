@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teams from FastApi</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .page-title {
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table tbody tr:hover {
+            background-color: #f0f8ff !important;
+            cursor: pointer;
+        }
+
+        .btn-back {
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-size: 15px;
+        }
+
+        .btn-delete {
+            padding: 2px 6px;
+            font-size: 0.8rem;
+        }
+
+        /* Modal styling for trophies */
+        .trophy-modal img {
+            max-height: 100px;
+            object-fit: contain;
+        }
+
+    .trophy-champions {
+        background-color: #d1e7dd;   /* Bootstrap green light */
+        color: #0f5132;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 4px 8px;
+        display: inline-block;
+    }
+        
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <!-- BACK + CREATE -->
+    <div class="d-flex justify-content-between mb-3">
+        <a href="/" class="btn btn-secondary btn-back">🏠 Back to Dashboard</a>
+
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            + Create Team
+        </button>
+    </div>
+
+    <h2 class="page-title mb-3">Teams from FastApi</h2>
+
+    <!-- ================= FILTERS ================= -->
+    <div class="row mb-3 align-items-end" style="max-width: 700px;">
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Filter by team name</label>
+            <select id="teamFilter" class="form-select">
+                <option value="">All teams</option>
+                {% for t in teams %}
+                    <option value="{{ t.Name }}">{{ t.Name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Filter by trophy</label>
+            <select id="trophyFilter" class="form-select">
+                <option value="">All</option>
+                {% for t in teams %}
+                    <option value="{{ t.TrophyWin }}">{{ t.TrophyWin }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- New Filter for Top Scorer -->
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Filter by Top Scorer</label>
+            <select id="topScorerFilter" class="form-select">
+                <option value="">All top scorers</option>
+                {% for t in teams %}
+                    <option value="{{ t.TopScorer }}">{{ t.TopScorer }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4 d-flex">
+            <button id="backToTeams"
+                    class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to full teams list</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+
+            {% if teams %}
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Nationality</th>
+                    <th>Season</th>
+                    <th>Top Scorer</th>
+                    <th>Trophy</th>
+                    <th>Final Result</th>
+                    <th style="width: 160px;">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for t in teams %}
+                    <tr class="team-row"
+                        data-name="{{ t.Name }}"
+                        data-trophy="{{ t.TrophyWin }}"
+                        data-topscorer="{{ t.TopScorer }}"
+                        data-href="/teams/{{ t.Id }}/">
+
+                        <td><strong>{{ t.Name }}</strong></td>
+                        <td>{{ t.NationalityName }}</td>
+                        <td>{{ t.Season }}</td>
+                        <td>{{ t.TopScorer }}</td>
+                        
+                        <td>
+                            {% if t.TrophyWin == "ChampionsCup" %}
+                                <span class="trophy-champions">
+                                    <i class="bi bi-trophy-fill"></i> {{ t.TrophyWin }}
+                                </span>
+                            {% else %}
+                                {{ t.TrophyWin }}
+                            {% endif %}
+                        </td>
+
+                        <td>{{ t.FinalResult }}</td>
+
+                        <td class="d-flex gap-1">
+                            <a href="/teams/edit/{{ t.Id }}/" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <form method="POST" action="/teams/delete/{{ t.Id }}/">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger btn-delete"
+                                        onclick="return confirm('Are you sure?');">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+
+                            <!-- SHOW TROPHIES BUTTON -->
+                            <button type="button" class="btn btn-sm btn-info show-trophies-btn"
+                                    data-team-id="{{ t.Id }}"
+                                    data-team-name="{{ t.Name }}"
+                                    title="Show trophies by season">
+                                <i class="bi bi-trophy-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <div class="p-4 text-center text-muted">
+                    No teams found. Start FastAPI.
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= CREATE MODAL ================= -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Create Team</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                {% include "team_create.html" %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ================= JS ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* ===== BACK TO TEAMS (RESET FILTERS) ===== */
+    const backBtn = document.getElementById("backToTeams");
+    if (backBtn) {
+        backBtn.addEventListener("click", function () {
+            localStorage.removeItem(STORAGE_TEAM);
+            localStorage.removeItem(STORAGE_TROPHY);
+            localStorage.removeItem(STORAGE_TOP_SCORER);
+            window.location.href = "/teams/";
+        });
+    }
+
+    const teamFilter = document.getElementById("teamFilter");
+    const trophyFilter = document.getElementById("trophyFilter");
+    const topScorerFilter = document.getElementById("topScorerFilter");
+    const rows = document.querySelectorAll(".team-row");
+
+    /* ===== LOCAL STORAGE KEYS ===== */
+    const STORAGE_TEAM = "teamFilterValue";
+    const STORAGE_TROPHY = "trophyFilterValue";
+    const STORAGE_TOP_SCORER = "topScorerFilterValue";
+
+    /* ===== USUWANIE DUPLIKATÓW Z SELECTÓW ===== */
+    function removeDuplicates(select) {
+        const seen = new Set();
+        Array.from(select.options).forEach(opt => {
+            if (!opt.value) return;
+            if (seen.has(opt.value)) opt.remove();
+            else seen.add(opt.value);
+        });
+    }
+
+    removeDuplicates(teamFilter);
+    removeDuplicates(trophyFilter);
+    removeDuplicates(topScorerFilter);
+
+    /* ===== PRZYWRACANIE FILTRÓW ===== */
+    teamFilter.value = localStorage.getItem(STORAGE_TEAM) || "";
+    trophyFilter.value = localStorage.getItem(STORAGE_TROPHY) || "";
+    topScorerFilter.value = localStorage.getItem(STORAGE_TOP_SCORER) || "";
+
+    /* ===== FILTROWANIE ===== */
+    function applyFilters() {
+        const teamValue = teamFilter.value.toLowerCase();
+        const trophyValue = trophyFilter.value.toLowerCase();
+        const topScorerValue = topScorerFilter.value.toLowerCase();
+
+        rows.forEach(row => {
+            const team = row.dataset.name.toLowerCase();
+            const trophy = row.dataset.trophy.toLowerCase();
+            const topScorer = row.dataset.topscorer.toLowerCase();
+
+            const teamMatch = !teamValue || team === teamValue;
+            const trophyMatch = !trophyValue || trophy === trophyValue;
+            const topScorerMatch = !topScorerValue || topScorer === topScorerValue;
+
+            row.style.display = teamMatch && trophyMatch && topScorerMatch ? "" : "none";
+        });
+
+        /* zapamiętanie filtrów */
+        localStorage.setItem(STORAGE_TEAM, teamFilter.value);
+        localStorage.setItem(STORAGE_TROPHY, trophyFilter.value);
+        localStorage.setItem(STORAGE_TOP_SCORER, topScorerFilter.value);
+    }
+
+    teamFilter.addEventListener("change", applyFilters);
+    trophyFilter.addEventListener("change", applyFilters);
+    topScorerFilter.addEventListener("change", applyFilters);
+
+    /* zastosuj filtry po powrocie */
+    applyFilters();
+
+    /* ===== KLIK WIERSZA ===== */
+    rows.forEach(row => {
+        row.addEventListener("click", function () {
+            window.location.href = this.dataset.href;
+        });
+    });
+
+    /* ===== NIE KLIKAMY WIERSZA PRZY BUTTONACH ===== */
+    document.querySelectorAll("a, button, form").forEach(el => {
+        el.addEventListener("click", e => e.stopPropagation());
+    });
+
+    /* ===== SHOW TROPHIES BY SEASON ===== */
+    document.querySelectorAll(".show-trophies-btn").forEach(btn => {
+        btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            const teamId = this.dataset.teamId;
+            const teamName = this.dataset.teamName;
+
+            fetch(`/teams/${teamId}/trophies_by_season/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        alert(`No trophies found for ${teamName}`);
+                        return;
+                    }
+
+                    let modalHtml = `<h5>Trophies by season - ${teamName}</h5><hr>`;
+                    data.forEach(season => {
+                        modalHtml += `<strong>Season ${season.Season}:</strong><div class="d-flex flex-wrap mb-3">`;
+
+                        if (!season.Trophies || season.Trophies.length === 0) {
+                            modalHtml += `
+                                <div class="w-100 text-center py-3 rounded border border-secondary-subtle bg-light text-secondary fw-semibold">
+                                    🏆 No trophy this season
+                                </div>
+                            `;
+                        } else {
+                            season.Trophies.forEach(t => {
+                                modalHtml += `
+                                    <div class="text-center me-3 mb-2">
+                                        <img src="${t.Picture}" class="d-block mb-1" style="height:80px;object-fit:contain;">
+                                        <small>${t.Name}</small>
+                                    </div>`;
+                            });
+                        }
+
+                        modalHtml += `</div>`;
+                    });
+
+                    const modalDiv = document.createElement("div");
+                    modalDiv.className = "modal fade trophy-modal";
+                    modalDiv.tabIndex = -1;
+                    modalDiv.innerHTML = `
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content p-3">
+                                <button type="button" class="btn-close mb-2" data-bs-dismiss="modal"></button>
+                                ${modalHtml}
+                            </div>
+                        </div>`;
+                    document.body.appendChild(modalDiv);
+
+                    const modal = new bootstrap.Modal(modalDiv);
+                    modal.show();
+
+                    modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+                })
+                .catch(err => {
+                    console.error("Error loading trophies!", err);
+                    alert("Error loading trophies!");
+                });
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>

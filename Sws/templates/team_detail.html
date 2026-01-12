@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Team details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        html, body {
+            height: 100vh;
+            overflow: hidden; /* brak scrolla */
+        }
+
+        .trophy-image {
+            max-height: 120px;
+            object-fit: contain;
+        }
+
+        .table td, .table th {
+            padding: 0.35rem;
+        }
+
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        /* Mały obrazek - wrapper */
+        .team-image-wrapper {
+            overflow: hidden;
+            display: inline-block;
+            cursor: zoom-in;
+        }
+
+        .team-image {
+            max-height: 200px;
+            object-fit: contain;
+            transition: transform 0.35s ease-in-out;
+        }
+
+        /* Modal overlay - fullscreen, ciemne tło z centrowaniem obrazka */
+        #imageOverlay {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #imageOverlay img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            box-shadow: 0 0 20px rgba(255,255,255,0.7);
+            border-radius: 5px;
+            cursor: zoom-out;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-2">
+
+    <!-- BACK BUTTON -->
+    <div class="mb-2">
+        <a href="/teams/" class="btn btn-sm btn-outline-secondary">← Back to teams</a>
+    </div>
+
+    {% if team %}
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white py-2">
+            <h5 class="mb-0">{{ team.Name }}</h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <!-- LEFT -->
+                <div class="col-md-4 text-center">
+                    {% if team.Picture %}
+                        <div class="team-image-wrapper">
+                            <img src="{{ team.Picture }}" class="img-fluid rounded team-image mb-2" alt="Team Image">
+                        </div>
+                    {% else %}
+                        <div class="border rounded p-2 text-muted">No image</div>
+                    {% endif %}
+                </div>
+
+                <!-- RIGHT -->
+                <div class="col-md-8">
+                    <table class="table table-bordered table-sm mb-2">
+                        <tr><th>Nationality</th><td>{{ team.NationalityName }}</td></tr>
+                        <tr><th>Season</th><td>{{ team.Season }}</td></tr>
+                        <tr><th>Top Scorer</th><td>{{ team.TopScorer }}</td></tr>
+                        <tr><th>Final Result</th><td>{{ team.FinalResult }}</td></tr>
+                        <tr><th>Trophy Win</th><td>{{ team.TrophyWin }}</td></tr>
+                        <tr><th>Description</th><td>{{ team.Description|default:"-" }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TROPHIES -->
+            <h6 class="mt-2">🏆 Trophies</h6>
+
+            {% if team.trophies %}
+            <div class="row">
+                {% for trophy in team.trophies %}
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        {% if trophy.Picture %}
+                            <img src="{{ trophy.Picture }}" class="card-img-top trophy-image" alt="Trophy Image">
+                        {% endif %}
+                        <div class="card-body p-2">
+                            <strong class="small">{{ trophy.Name }}</strong>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+                <p class="text-muted small">No trophies assigned.</p>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Overlay do powiększenia -->
+<div id="imageOverlay">
+    <img id="largeImage" src="" alt="Large view">
+</div>
+
+<script>
+    const overlay = document.getElementById('imageOverlay');
+    const largeImg = document.getElementById('largeImage');
+    const smallImgWrapper = document.querySelector('.team-image-wrapper');
+
+    if (smallImgWrapper) {
+        smallImgWrapper.addEventListener('mouseenter', () => {
+            const smallImg = smallImgWrapper.querySelector('img');
+            if (smallImg) {
+                largeImg.src = smallImg.src;
+                overlay.style.display = 'flex';
+            }
+        });
+
+        smallImgWrapper.addEventListener('mouseleave', () => {
+            overlay.style.display = 'none';
+            largeImg.src = '';
+        });
+    }
+
+    // Kliknięcie na overlay też zamyka overlay
+    overlay.addEventListener('click', () => {
+        overlay.style.display = 'none';
+        largeImg.src = '';
+    });
+</script>
+
+</body>
+</html>

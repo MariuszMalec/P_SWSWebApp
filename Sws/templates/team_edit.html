@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Team</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 12px;
+        }
+        .compact-form .form-control,
+        .compact-form .form-select {
+            padding: 4px 8px;
+            height: 32px;
+            font-size: 0.9rem;
+        }
+        .compact-form label {
+            font-size: 0.82rem;
+            margin-bottom: 3px;
+        }
+        .compact-form .mb-2 {
+            margin-bottom: 10px !important;
+        }
+    </style>
+</head>
+<body class="p-3 compact-form">
+
+<h4 class="mb-3">Edit Team</h4>
+
+<form id="editTeamForm" method="POST">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Team Name</label>
+        <select id="nameSelect" name="Name" class="form-select">
+            {% for name in team_names %}
+                <option value="{{ name }}" {% if team.Name == name %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <textarea name="Description" class="form-control">{{ team.Description }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Nationality Name</label>
+        <select id="NationalityNameSelect" name="NationalityName" class="form-select">
+            {% for nat in nationalities %}
+                <option value="{{ nat }}" {% if team.NationalityName == nat %}selected{% endif %}>{{ nat }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Season</label>
+        <input type="number" name="Season" class="form-control" value="{{ team.Season }}" min="1000" max="9999" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Top Scorer</label>
+        <input name="TopScorer" type="text" class="form-control" value="{{ team.TopScorer }}">
+    </div>
+
+    <div class="mb-3">
+        <label>Picture URL</label>
+        <input name="Picture" type="text" class="form-control" value="{{ team.Picture }}">
+    </div>
+
+    <div class="mb-3">
+        <label>TrophyWin</label>
+        <select name="TrophyWin" class="form-select">
+            {% for trophy in trophies %}
+                <option value="{{ trophy }}" {% if team.TrophyWin == trophy %}selected{% endif %}>{{ trophy }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Final Result</label>
+        <input name="FinalResult" type="text" class="form-control" value="{{ team.FinalResult }}">
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">
+            Save Changes
+        </button>
+
+        <a href="/teams/" class="btn btn-secondary">
+            Cancel
+        </a>
+    </div>
+
+
+</form>
+
+<!-- TOASTS -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div id="teamSavedToast" class="toast align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">✅ Team updated successfully!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+    <div id="teamErrorToast" class="toast align-items-center text-bg-danger border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="teamErrorMessage">❌ Error updating team!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('editTeamForm');
+    const successToast = new bootstrap.Toast(document.getElementById('teamSavedToast'));
+    const errorToast = new bootstrap.Toast(document.getElementById('teamErrorToast'));
+    const errorMessageEl = document.getElementById('teamErrorMessage');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                successToast.show();
+                setTimeout(() => { window.location.href = '/teams/'; }, 1300);
+            } else {
+                const msg = result.errors ? Object.values(result.errors).map(e => typeof e === 'string' ? e : JSON.stringify(e)).join('\n') : '❌ Error';
+                errorMessageEl.textContent = msg;
+                errorToast.show();
+            }
+        } catch (err) {
+            console.error(err);
+            errorMessageEl.textContent = '❌ Something went wrong!';
+            errorToast.show();
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(cookie => {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                }
+            });
+        }
+        return cookieValue;
+    }
+});
+</script>
+</body>
+</html>

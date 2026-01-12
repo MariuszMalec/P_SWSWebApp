@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Trophy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #4a90e2;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #357ABD;
+        }
+        .message {
+            margin-bottom: 15px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Edit Trophy</h2>
+
+    <div id="messages"></div>
+
+    <form id="editTrophyForm" method="POST">
+        {% csrf_token %}
+
+        <label for="Name">Name*</label>
+        <input type="text" id="Name" name="Name" value="{{ trophy.Name }}" required>
+
+        <label for="Description">Description*</label>
+        <input type="text" id="Description" name="Description" value="{{ trophy.Description }}" required>
+
+        <label for="Picture">Picture URL</label>
+        <input type="url" id="Picture" name="Picture" value="{{ trophy.Picture }}">
+
+        <label for="TeamModelId">Team ID (optional)</label>
+        <input type="text" id="TeamModelId" name="TeamModelId" value="{{ trophy.TeamModelId }}">
+
+        <button type="submit">Save</button>
+
+        <a href="/trophies/">
+            <button type="button" style="background:#888;">Back to Trophies</button>
+        </a>
+
+    </form>
+    
+</div>
+
+<script>
+    const form = document.getElementById('editTrophyForm');
+    const messages = document.getElementById('messages');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        messages.innerHTML = "";
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch("", {  // POST to same URL
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                messages.innerHTML = `<p class="success">Trophy updated successfully!</p>`;
+            } else {
+                let errs = "";
+                if (data.errors) {
+                    for (const key in data.errors) {
+                        errs += `<p class="error">${key}: ${data.errors[key]}</p>`;
+                    }
+                }
+                messages.innerHTML = errs || `<p class="error">Error updating trophy</p>`;
+            }
+        } catch (err) {
+            messages.innerHTML = `<p class="error">Network error: ${err}</p>`;
+        }
+    });
+</script>
+</body>
+</html>

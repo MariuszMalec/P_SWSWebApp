@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Trophy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset niektórych elementów */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        select {
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        select:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        button {
+            background: #4a90e2;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #357ABD;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 15px;
+        }
+
+        .success {
+            color: green;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Trophy</h2>
+
+        <div id="messages"></div>
+
+        <form id="trophyForm">
+            <label for="Name">Trophy Name*</label>
+            <input type="text" id="Name" name="Name" placeholder="Enter trophy name" required>
+
+            <label for="Description">Description*</label>
+            <input type="text" id="Description" name="Description" placeholder="Enter description" required>
+
+            <label for="Picture">Picture URL</label>
+            <input type="url" id="Picture" name="Picture" placeholder="Enter image URL (optional)">
+
+            <label for="TeamModelId">Team (optional)</label>
+            <select id="TeamModelId" name="TeamModelId">
+                <option value="">-- Select a team --</option>
+                {% for team in teams %}
+                    <option value="{{ team.Id }}">{{ team.Name }} ({{ team.Season }})</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Create Trophy</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('trophyForm');
+        const messages = document.getElementById('messages');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            messages.innerHTML = "";
+
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch("{% url 'create_trophy' %}", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messages.innerHTML = `<p class="success">Trophy created successfully!</p>`;
+                    form.reset();
+
+                    // po 1 sekundzie przejdź do listy trofeów (albo odśwież stronę)
+                    setTimeout(() => {
+                        window.location.href = '/trophies/'; // <-- wstaw tu adres strony z listą trofeów
+                    }, 1000);
+
+                } else {
+                    let errs = "";
+                    if (data.errors) {
+                        for (const key in data.errors) {
+                            errs += `<p class="error">${key}: ${data.errors[key]}</p>`;
+                        }
+                    }
+                    messages.innerHTML = errs || `<p class="error">Error creating trophy</p>`;
+                }
+            } catch (err) {
+                messages.innerHTML = `<p class="error">Network error: ${err}</p>`;
+            }
+        });
+
+
+
+
+    </script>
+</body>
+</html>
