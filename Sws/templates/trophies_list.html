@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trophies from FastApi</title>
 
     <link rel="stylesheet"
@@ -48,42 +49,61 @@
             font-size: 0.8rem;
         }
 
-        /* Ogranicz rozmiar obrazka i wymuś, żeby wiersz się nie rozciągał */
         .trophy-img {
             max-width: 100px;
             max-height: 60px;
-            width: auto;
-            height: auto;
             object-fit: contain;
             display: block;
-            margin: 0 auto;
-            vertical-align: middle;
         }
 
-        /* Wymuś stałą wysokość komórki, aby wiersze były wyrównane */
-        table tbody tr td {
-            vertical-align: middle;
-            max-height: 70px; /* można dostosować */
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        /* Wyrównaj pionowo i poziomo */
-        .table td.actions-cell {
-            width: 120px; /* lub inna szerokość, która Ci pasuje */
-            white-space: nowrap; /* żeby przyciski nie zawijały się na nową linię */
-            vertical-align: middle;
-            text-align: center; /* wyśrodkuj przyciski */
-        }
-
-        /* Małe odstępy między przyciskami */
         .actions-cell .btn {
             margin: 0 4px;
-            padding: 4px 8px;  /* dopasuj, by nie były za duże */
-            font-size: 0.9rem;
         }
 
+        /* ===== MOBILE VIEW ===== */
+        @media (max-width: 576px) {
+            table thead {
+                display: none;
+            }
 
+            table,
+            table tbody,
+            table tr,
+            table td {
+                display: block;
+                width: 100%;
+            }
+
+            table tr {
+                margin-bottom: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 8px;
+                background: #fff;
+            }
+
+            table td {
+                padding: 4px 8px !important;
+                text-align: left;
+                border: none;
+                display: flex;
+                justify-content: space-between;
+                gap: 8px;
+            }
+
+            table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #555;
+                flex-shrink: 0;
+            }
+
+            table td:last-child {
+                justify-content: flex-start;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 
@@ -94,7 +114,7 @@
     {% if error_delete %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <strong>Nie można usunąć trofeum!</strong> {{ error_delete }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endif %}
 
@@ -115,41 +135,42 @@
                 <table class="table table-hover table-striped align-middle">
                     <thead class="table-dark">
                     <tr>
-                        <th style="width: 20%">Name</th>
-                        <th style="width: 35%">Description</th>
-                        <th style="width: 15%">Picture</th>
-                        <th style="width: 20%">Actions</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Picture</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
 
                     <tbody>
                     {% for trophy in trophies %}
                         <tr>
-                            <td><strong>{{ trophy.Name }}</strong></td>
-                            <td>{{ trophy.Description }}</td>
-                            
-                            <td>
+                            <td data-label="Name"><strong>{{ trophy.Name }}</strong></td>
+                            <td data-label="Description">{{ trophy.Description }}</td>
+
+                            <td data-label="Picture">
                                 {% if trophy.Picture %}
-                                    <img src="{{ trophy.Picture }}" alt="{{ trophy.Name }}" class="trophy-img"
-                                        onerror="this.style.display='none';" />
+                                    <img src="{{ trophy.Picture }}" alt="{{ trophy.Name }}"
+                                         class="trophy-img"
+                                         onerror="this.style.display='none';">
+                                {% else %}
+                                    —
                                 {% endif %}
                             </td>
 
-                            <td class="actions-cell">
-                                <a href="/trophies/edit/{{ trophy.Id }}/" class="btn btn-sm btn-warning" title="Edit Trophy">
+                            <td data-label="Actions" class="actions-cell d-flex flex-wrap">
+                                <a href="/trophies/edit/{{ trophy.Id }}/" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil"></i>
                                 </a>
 
                                 <form method="POST" action="/trophies/delete/{{ trophy.Id }}/" style="display:inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-sm btn-danger btn-delete"
-                                            title="Delete Trophy"
                                             onclick="return confirm('Are you sure you want to delete this trophy?');">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </td>
-
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -165,7 +186,6 @@
     </div>
 </div>
 
-<!-- CREATE TROPHY MODAL -->
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -184,6 +204,5 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

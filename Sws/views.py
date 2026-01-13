@@ -238,16 +238,36 @@ def edit_team(request, team_id):
         "nationalities": nationalities
     })
 
+# @csrf_exempt
+# def trophies_by_season(request, team_id):
+
+#     try:
+#         response = requests.get(f"{FASTAPI_URL}/teams/{team_id}/trophies_by_season")
+#         response.raise_for_status()
+#         data = response.json()
+#         return JsonResponse(data, safe=False)
+#     except Exception as e:
+#         return JsonResponse({"error": f"Cannot fetch trophies: {e}"}, status=500)
+    
+
 @csrf_exempt
 def trophies_by_season(request, team_id):
-
     try:
         response = requests.get(f"{FASTAPI_URL}/teams/{team_id}/trophies_by_season")
         response.raise_for_status()
         data = response.json()
-        return JsonResponse(data, safe=False)
+
+        return render(request, "trophies_by_season.html", {
+            "team_id": team_id,
+            "seasons": data
+        })
+
     except Exception as e:
-        return JsonResponse({"error": f"Cannot fetch trophies: {e}"}, status=500)
+        return render(request, "trophies_by_season.html", {
+            "team_id": team_id,
+            "error": f"Cannot fetch trophies: {e}",
+            "seasons": []
+        })
 
 
 @csrf_exempt

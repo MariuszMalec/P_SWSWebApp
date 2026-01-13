@@ -33,4 +33,13 @@ urlpatterns = [
     path('trophies/delete/<int:trophy_id>/', views.delete_trophy, name='delete_trophy'),
     path('trophies/edit/<int:trophy_id>/', views.edit_trophy, name='edit_trophy'),
 
+    # 🔥 TROPHIES BY SEASON (Django -> FastAPI -> HTML)
+    path(
+        'teams/<int:team_id>/trophies_by_season/',
+        views.trophies_by_season,
+        name='trophies_by_season'
+    ),
+
+
+
 ]
