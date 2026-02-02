@@ -144,26 +144,21 @@
     const smallImgWrapper = document.querySelector('.team-image-wrapper');
 
     if (smallImgWrapper) {
-        smallImgWrapper.addEventListener('mouseenter', () => {
+        smallImgWrapper.addEventListener('click', () => {
             const smallImg = smallImgWrapper.querySelector('img');
             if (smallImg) {
                 largeImg.src = smallImg.src;
                 overlay.style.display = 'flex';
             }
         });
-
-        smallImgWrapper.addEventListener('mouseleave', () => {
-            overlay.style.display = 'none';
-            largeImg.src = '';
-        });
     }
 
-    // Kliknięcie na overlay też zamyka overlay
     overlay.addEventListener('click', () => {
         overlay.style.display = 'none';
         largeImg.src = '';
     });
 </script>
+
 
 </body>
 </html>
