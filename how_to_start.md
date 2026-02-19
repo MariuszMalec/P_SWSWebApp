@@ -1,3 +1,4 @@
+## django project, nie dziala w termux
 ## visual Studio Code
 
 ## how to start swsdb app (obie applikacje musz byc aktywne fast api i django projekt)
