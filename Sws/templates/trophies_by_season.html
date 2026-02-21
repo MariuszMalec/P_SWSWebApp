@@ -58,7 +58,15 @@
 
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Team (ID: {{ team_id }})</h3>
+        <h3 class="mb-0">
+            {% if seasons %}
+                {% with first_season=seasons|first %}
+                    <h3 class="mb-0">{{ first_season.TeamName }}</h3>
+                {% endwith %}
+            {% else %}
+                <h3 class="mb-0">Nieznana drużyna (ID: {{ team_id }})</h3>
+            {% endif %}
+        </h3>
 
         <a href="/teams/" class="btn btn-outline-light">
             ← back to teams
